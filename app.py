@@ -134,3 +134,10 @@ with app.app_context():
     import models  # noqa: F401
     db.create_all()
     logger.info("Database tables created")
+
+
+    # >>> ADD THESE TWO LINES HERE <<<
+    import populate_data # Import the populate_data script
+    populate_data.populate_sample_content()
+    logger.info("Database population script executed (if not already populated)!")
+    # >>> END ADDITIONS <<<

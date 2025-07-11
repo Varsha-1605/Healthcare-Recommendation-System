@@ -79,6 +79,7 @@ from flask_socketio import SocketIO
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -101,8 +102,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 # Initialize extensions
 db = SQLAlchemy(app, model_class=Base)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
-
+# socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 # API Configuration
 HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY', 'hf_default_key')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'gemini_default_key')
@@ -144,3 +145,5 @@ with app.app_context():
     populate_data.populate_sample_content()
     logger.info("Database population script executed (if not already populated)!")
     # >>> END ADDITIONS <<<
+
+import routes

@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12" data-aos="fade-down">
+            <div class="welcome-header">
+                <h1 class="display-6 fw-bold text-primary mb-2">
+                    Welcome back, {{ user.full_name.split()[0] }}! 👋
+                </h1>
+                <p class="lead text-muted">Here's your personalized health overview and AI-powered insights</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Recommendations Section -->
+    <div class="row mb-4">
+        <div class="col-12" data-aos="fade-up">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-magic me-2"></i>AI-Powered Recommendations
+                    </h5>
+                    <button class="btn btn-light btn-sm" id="refresh-recommendations">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                </div>
+                <div class="card-body" id="recommendations-section">
+                    <div class="row g-3">
+                        {% for content in recommendations[:3] %}
+                        <div class="col-lg-4">
+                            <div class="recommendation-card-mini">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-primary">{{ content.category.replace('_', ' ').title() }}</span>
+                                    <i class="fas fa-robot text-primary"></i>
+                                </div>
+                                <h6 class="fw-bold">{{ content.title }}</h6>
+                                <p class="small text-muted mb-2">{{ content.description[:80] }}...</p>
+                                <a href="{{ url_for('content_detail', content_id=content.id) }}" class="btn btn-sm btn-outline-primary">
+                                    View <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Insights & Analytics -->
+    <div class="row mb-4">
+        <!-- Health Score Card -->
+        <div class="col-lg-3 col-md-6 mb-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="metric-card">
+                <div class="metric-icon bg-success">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-number">85</h3>
+                    <p class="metric-label">Health Score</p>
+                    <small class="text-success">↗ +5 this week</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultations -->
+        <div class="col-lg-3 col-md-6 mb-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="metric-card">
+                <div class="metric-icon bg-info">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-number">{{ consultations|length }}</h3>
+                    <p class="metric-label">AI Consultations</p>
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Insights -->
+        <div class="col-lg-3 col-md-6 mb-3" data-aos="fade-up" data-aos-delay="300">
+            <div class="metric-card">
+                <div class="metric-icon bg-warning">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-number">{{ insights|length }}</h3>
+                    <p class="metric-label">Active Insights</p>
+                    <small class="text-muted">Predictive AI</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookmarks -->
+        <div class="col-lg-3 col-md-6 mb-3" data-aos="fade-up" data-aos-delay="400">
+            <div class="metric-card">
+                <div class="metric-icon bg-primary">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 class="metric-number">{{ bookmarks|length }}</h3>
+                    <p class="metric-label">Saved Content</p>
+                    <small class="text-muted">Your library</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Predictive Insights -->
+        <div class="col-lg-8 mb-4" data-aos="fade-up">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crystal-ball me-2 text-purple"></i>Predictive Health Insights
+                    </h5>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if insights %}
+                        {% for insight in insights[:3] %}
+                        <div class="insight-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">{{ insight.title }}</h6>
+                                    <p class="text-muted small mb-2">{{ insight.description[:150] }}...</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-{{ 'danger' if insight.priority_level == 'high' else 'warning' if insight.priority_level == 'medium' else 'info' }} me-2">
+                                            {{ insight.priority_level.title() }} Priority
+                                        </span>
+                                        <span class="text-muted small">
+                                            Confidence: {{ (insight.confidence_score * 100)|round }}%
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="insight-type-icon">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if insight.insight_type == 'health_risk' else 'chart-line' if insight.insight_type == 'wellness_trend' else 'shield-alt' }}"></i>
+                                </div>
+                            </div>
+                            {% if not loop.last %}<hr class="my-3">{% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-magic text-muted mb-3" style="font-size: 2rem;"></i>
+                            <p class="text-muted">Generating your personalized insights...</p>
+                            <button class="btn btn-primary" onclick="generateInsights()">
+                                <i class="fas fa-brain me-2"></i>Generate Insights
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Quick Actions -->
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities[:5] %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-{{ 'eye' if activity.activity_type == 'view' else 'search' if activity.activity_type == 'search' else 'star' if activity.activity_type == 'rating' else 'bookmark' if activity.activity_type == 'bookmark' else 'user-md' if activity.activity_type == 'consultation' else 'circle' }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="small mb-1">
+                                    {% if activity.activity_type == 'view' %}
+                                        Viewed health content
+                                    {% elif activity.activity_type == 'search' %}
+                                        Searched: "{{ activity.search_query }}"
+                                    {% elif activity.activity_type == 'consultation' %}
+                                        AI Health Consultation
+                                    {% else %}
+                                        {{ activity.activity_type.title() }} activity
+                                    {% endif %}
+                                </p>
+                                <span class="text-muted small">{{ activity.timestamp.strftime('%m/%d %H:%M') }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent activity</p>
+                    {% endif %}
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="mb-3">Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('consultation') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-stethoscope me-2"></i>New AI Consultation
+                            </a>
+                            <a href="{{ url_for('search') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-search me-2"></i>Explore Content
+                            </a>
+                            <a href="{{ url_for('analytics') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-chart-pie me-2"></i>Health Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Consultations -->
+    {% if consultations %}
+    <div class="row mb-4">
+        <div class="col-12" data-aos="fade-up">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-md me-2"></i>Recent AI Consultations
+                    </h5>
+                    <a href="{{ url_for('consultation_history') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for consultation in consultations %}
+                        <div class="col-md-4">
+                            <div class="consultation-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-{{ 'danger' if consultation.severity_level == 'high' else 'warning' if consultation.severity_level == 'moderate' else 'success' }}">
+                                        {{ consultation.severity_level.title() if consultation.severity_level else 'Analyzed' }}
+                                    </span>
+                                    <small class="text-muted">{{ consultation.created_at.strftime('%m/%d/%Y') }}</small>
+                                </div>
+                                <p class="small mb-2">{{ consultation.symptoms[:100] }}...</p>
+                                <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}" class="btn btn-sm btn-outline-primary">
+                                    View Results <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bookmarked Content -->
+    {% if bookmarks %}
+    <div class="row">
+        <div class="col-12" data-aos="fade-up">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bookmark me-2"></i>Your Saved Content
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for bookmark in bookmarks %}
+                        <div class="col-lg-3 col-md-6">
+                            <div class="bookmark-card">
+                                <span class="badge bg-secondary mb-2">{{ bookmark.content.category.replace('_', ' ').title() }}</span>
+                                <h6 class="fw-bold">{{ bookmark.content.title }}</h6>
+                                <p class="small text-muted mb-2">{{ bookmark.content.description[:80] }}...</p>
+                                <a href="{{ url_for('content_detail', content_id=bookmark.content.id) }}" class="btn btn-sm btn-outline-primary">
+                                    Read <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Connection Status Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="live-update-toast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="fas fa-sync-alt text-primary me-2"></i>
+            <strong class="me-auto">Live Updates</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            New recommendations available!
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh recommendations
+    const refreshBtn = document.getElementById('refresh-recommendations');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading...';
+            this.disabled = true;
+            
+            fetch('/api/recommendations/refresh')
+                .then(response => response.json())
+                .then(data => {
+                    updateRecommendationsSection(data);
+                    this.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh';
+                    this.disabled = false;
+                    
+                    // Show success toast
+                    showToast('Recommendations updated!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh';
+                    this.disabled = false;
+                });
+        });
+    }
+    
+    function updateRecommendationsSection(data) {
+        const section = document.getElementById('recommendations-section');
+        if (data.content_recommendations && data.content_recommendations.length > 0) {
+            const html = data.content_recommendations.slice(0, 3).map(content => `
+                <div class="col-lg-4">
+                    <div class="recommendation-card-mini">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary">${content.category.replace('_', ' ')}</span>
+                            <i class="fas fa-robot text-primary"></i>
+                        </div>
+                        <h6 class="fw-bold">${content.title}</h6>
+                        <p class="small text-muted mb-2">${content.description.substring(0, 80)}...</p>
+                        <a href="${content.url}" class="btn btn-sm btn-outline-primary">
+                            View <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+            
+            section.innerHTML = `<div class="row g-3">${html}</div>`;
+        }
+    }
+    
+    function showToast(message) {
+        const toastElement = document.getElementById('live-update-toast');
+        const toast = new bootstrap.Toast(toastElement);
+        toastElement.querySelector('.toast-body').textContent = message;
+        toast.show();
+    }
+});
+
+function generateInsights() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    button.disabled = true;
+    
+    // Call the API to generate insights
+    fetch('/api/generate_insights')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the page to show new insights
+                location.reload();
+            } else {
+                alert('Failed to generate insights. Please try again.');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error generating insights:', error);
+            alert('An error occurred while generating insights.');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+}
+</script>
+{% endblock %}

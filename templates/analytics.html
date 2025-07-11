@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}Health Analytics - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12" data-aos="fade-down">
+            <div class="analytics-header">
+                <h1 class="display-6 fw-bold text-primary mb-2">
+                    <i class="fas fa-chart-pie me-2"></i>Health Analytics Dashboard
+                </h1>
+                <p class="lead text-muted">Advanced AI-powered insights into your health patterns and trends</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12" data-aos="fade-up">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-crystal-ball me-2"></i>AI Predictive Insights
+                    </h5>
+                    </div>
+                <div class="card-body" id="insights-container">
+                    <div class="text-center py-5">
+                        <div class="empty-insights">
+                            <i class="fas fa-brain text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted mb-3">Generating Your Health Insights</h5>
+                            <p class="text-muted mb-4">Our AI is ready to analyze your health data to provide personalized insights.</p>
+                            <button class="btn btn-primary" onclick="generateAndDisplayInsights(this)">
+                                <i class="fas fa-magic me-2"></i>Generate Insights Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Activity Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Health Engagement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="engagementChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stethoscope me-2"></i>Consultation Trends
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if consultation_trends %}
+                    <canvas id="consultationChart" width="600" height="300"></canvas>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line text-muted mb-3" style="font-size: 2rem;"></i>
+                        <p class="text-muted">No consultation data available yet</p>
+                        <a href="{{ url_for('consultation') }}" class="btn btn-primary">
+                            <i class="fas fa-stethoscope me-2"></i>Start Your First Consultation
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="500">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>Health Score
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="health-score-gauge mb-3">
+                        <canvas id="healthScoreGauge" width="200" height="200"></canvas>
+                    </div>
+                    <h3 class="text-primary mb-2">85/100</h3>
+                    <p class="text-muted mb-3">Your overall health engagement score</p>
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <span class="score-label">Activity Level:</span>
+                            <span class="score-value text-success">High</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Consistency:</span>
+                            <span class="score-value text-warning">Medium</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Engagement:</span>
+                            <span class="score-value text-success">High</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="600">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart-pulse me-2"></i>Your Health Content Preferences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <canvas id="categoryChart" width="600" height="300"></canvas>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="category-legend">
+                                <h6 class="mb-3">Most Engaged Categories:</h6>
+                                {% for category, views in category_stats %}
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: {{ loop.cycle('#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1') }}"></div>
+                                    <span class="legend-label">{{ category.replace('_', ' ').title() }}</span>
+                                    <span class="legend-value">{{ views }} views</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie text-muted mb-3" style="font-size: 2rem;"></i>
+                        <p class="text-muted">Start exploring content to see your preferences</p>
+                        <a href="{{ url_for('search') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Explore Health Content
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="700">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Personalized Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="recommendations-list">
+                        <div class="recommendation-item">
+                            <div class="rec-icon">
+                                <i class="fas fa-running text-primary"></i>
+                            </div>
+                            <div class="rec-content">
+                                <h6>Increase Physical Activity</h6>
+                                <p class="small text-muted">Based on your activity patterns, consider adding 2-3 more workout sessions per week.</p>
+                            </div>
+                            <div class="rec-action">
+                                <a href="{{ url_for('search') }}?category=fitness" class="btn btn-sm btn-outline-primary">
+                                    Explore Fitness
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-item">
+                            <div class="rec-icon">
+                                <i class="fas fa-brain text-success"></i>
+                            </div>
+                            <div class="rec-content">
+                                <h6>Mental Wellness Focus</h6>
+                                <p class="small text-muted">Your engagement with mental health content suggests continued focus in this area.</p>
+                            </div>
+                            <div class="rec-action">
+                                <a href="{{ url_for('search') }}?category=mental_health" class="btn btn-sm btn-outline-success">
+                                    Mental Health
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-item">
+                            <div class="rec-icon">
+                                <i class="fas fa-apple-alt text-warning"></i>
+                            </div>
+                            <div class="rec-content">
+                                <h6>Nutrition Optimization</h6>
+                                <p class="small text-muted">Explore more nutritional content to complement your health journey.</p>
+                            </div>
+                            <div class="rec-action">
+                                <a href="{{ url_for('search') }}?category=nutrition" class="btn btn-sm btn-outline-warning">
+                                    Nutrition Tips
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="800">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-target me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('consultation') }}" class="btn btn-primary">
+                            <i class="fas fa-stethoscope me-2"></i>New AI Consultation
+                        </a>
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit me-2"></i>Update Health Profile
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="exportHealthData()">
+                            <i class="fas fa-download me-2"></i>Export Health Data
+                        </button>
+                        <button class="btn btn-outline-info" onclick="scheduleCheckup()">
+                            <i class="fas fa-calendar-plus me-2"></i>Schedule Checkup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+<script>
+// **FIX**: Store chart data in a variable accessible for insight generation
+let chartDataForInsights = {
+    labels: [],
+    activity: [],
+    engagement: []
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAnalytics();
+});
+
+function initializeAnalytics() {
+    // Initialize all charts with data
+    initializeActivityChart();
+    initializeEngagementChart();
+    initializeHealthScoreGauge();
+    
+    {% if consultation_trends %}
+    initializeConsultationChart();
+    {% endif %}
+    
+    {% if category_stats %}
+    initializeCategoryChart();
+    {% endif %}
+}
+
+function initializeActivityChart() {
+    const ctx = document.getElementById('activityChart').getContext('2d');
+    
+    const activityData = {
+        labels: [{% for stat in activity_stats %}'{{ stat[0].replace("_", " ").title() }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Activities',
+            data: [{% for stat in activity_stats %}{{ stat[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 205, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    // **FIX**: Capture data for insight generation
+    chartDataForInsights.labels = activityData.labels;
+    chartDataForInsights.activity = activityData.datasets[0].data;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: activityData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function initializeEngagementChart() {
+    const ctx = document.getElementById('engagementChart').getContext('2d');
+    
+    const dates = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    }
+
+    const engagementValues = [3, 7, 5, 9, 6, 8, 12];
+    
+    // **FIX**: Capture data for insight generation
+    chartDataForInsights.engagement = engagementValues;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Daily Engagement',
+                data: engagementValues,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function initializeHealthScoreGauge() {
+    const ctx = document.getElementById('healthScoreGauge').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [85, 15],
+                backgroundColor: ['#28a745', '#e9ecef'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            circumference: 180,
+            rotation: 270,
+            cutout: '75%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+}
+
+{% if consultation_trends %}
+function initializeConsultationChart() {
+    const ctx = document.getElementById('consultationChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for trend in consultation_trends %}'{{ trend[0] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Consultations',
+                data: [{% for trend in consultation_trends %}{{ trend[1] }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+{% endif %}
+
+{% if category_stats %}
+function initializeCategoryChart() {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    
+    const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1'];
+    
+    new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: [{% for category, views in category_stats %}'{{ category.replace("_", " ").title() }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for category, views in category_stats %}{{ views }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: colors.slice(0, {{ category_stats|length }})
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+{% endif %}
+
+// **FIX**: Replaced old API-calling function with this new client-side version
+function generateAndDisplayInsights(button) {
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    button.disabled = true;
+    
+    // Use the logic from analytics.js to generate insights
+    const insights = window.healthAnalytics.generateInsights(chartDataForInsights);
+    const container = document.getElementById('insights-container');
+
+    // Dynamically build and inject the HTML for the insights
+    if (insights && insights.length > 0) {
+        let insightsHtml = '<div class="row g-3">';
+        insights.forEach(insight => {
+            const icon = insight.type === 'activity' ? 'chart-line' : 'shield-alt';
+            insightsHtml += `
+                <div class="col-lg-6">
+                    <div class="insight-card priority-${insight.priority}">
+                        <div class="insight-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="insight-icon"><i class="fas fa-${icon}"></i></div>
+                                <span class="priority-badge">${insight.priority.charAt(0).toUpperCase() + insight.priority.slice(1)}</span>
+                            </div>
+                            <h6 class="insight-title">${insight.type.charAt(0).toUpperCase() + insight.type.slice(1)} Insight</h6>
+                        </div>
+                        <div class="insight-body">
+                            <p class="insight-description">${insight.message}</p>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        insightsHtml += '</div>';
+        container.innerHTML = insightsHtml;
+    } else {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-info-circle text-muted mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mb-3">No specific insights could be generated.</h5>
+                <p class="text-muted">Engage more with the platform to receive personalized insights.</p>
+            </div>`;
+    }
+}
+
+function exportHealthData() {
+    alert('Health data export feature coming soon!');
+}
+
+function scheduleCheckup() {
+    alert('Checkup scheduling feature coming soon!');
+}
+</script>
+{% endblock %}

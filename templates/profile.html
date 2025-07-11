@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0" data-aos="fade-up">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Health Profile
+                    </h2>
+                    <p class="mb-0 mt-2">Manage your personal health information</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <form method="POST" id="profileForm">
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="full_name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" 
+                                           value="{{ user.full_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user.email }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="age" name="age" 
+                                           value="{{ user.age }}" min="1" max="120" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select class="form-control" id="gender" name="gender" required>
+                                        <option value="male" {{ 'selected' if user.gender == 'male' else '' }}>Male</option>
+                                        <option value="female" {{ 'selected' if user.gender == 'female' else '' }}>Female</option>
+                                        <option value="other" {{ 'selected' if user.gender == 'other' else '' }}>Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="{{ user.phone or '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-heartbeat me-2"></i>Health Information
+                            </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="fitness_level" class="form-label">Fitness Level</label>
+                                    <select class="form-control" id="fitness_level" name="fitness_level">
+                                        <option value="beginner" {{ 'selected' if user.fitness_level == 'beginner' else '' }}>Beginner</option>
+                                        <option value="intermediate" {{ 'selected' if user.fitness_level == 'intermediate' else '' }}>Intermediate</option>
+                                        <option value="advanced" {{ 'selected' if user.fitness_level == 'advanced' else '' }}>Advanced</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="medical_conditions" class="form-label">Medical Conditions</label>
+                                    <textarea class="form-control" id="medical_conditions" name="medical_conditions" rows="3" 
+                                              placeholder="List any medical conditions you have...">{{ user.medical_conditions or '' }}</textarea>
+                                    <div class="form-text">Help us provide better recommendations by sharing your medical history</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="medications" class="form-label">Current Medications</label>
+                                    <textarea class="form-control" id="medications" name="medications" rows="2" 
+                                              placeholder="List your current medications...">{{ user.medications or '' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="allergies" class="form-label">Allergies</label>
+                                    <textarea class="form-control" id="allergies" name="allergies" rows="2" 
+                                              placeholder="List any allergies...">{{ user.allergies or '' }}</textarea>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="health_goals" class="form-label">Health Goals</label>
+                                    <textarea class="form-control" id="health_goals" name="health_goals" rows="2" 
+                                              placeholder="What are your health and fitness goals?">{{ user.health_goals or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Account Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-box">
+                                        <strong>Username:</strong> {{ user.username }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-box">
+                                        <strong>Member since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Notice -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-shield-alt me-2"></i>Privacy & Security
+                            </h6>
+                            <p class="mb-0">Your health information is encrypted and secure. We use this data to provide personalized AI recommendations and never share it with third parties.</p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Update Profile
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('profileForm');
+    
+    // Form validation and enhancement
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+        submitBtn.disabled = true;
+    });
+    
+    // Auto-save draft functionality
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Visual feedback for unsaved changes
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn.classList.contains('btn-warning')) {
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-warning');
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Unsaved Changes';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

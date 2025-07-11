@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}HealthAI - AI-Powered Personalized Healthcare Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-4 fw-bold mb-4">
+                    Your AI-Powered Health Companion
+                </h1>
+                <p class="lead mb-4">
+                    Get personalized health recommendations, AI-powered consultations, and predictive insights 
+                    tailored to your unique health profile.
+                </p>
+                {% if not session.user_id %}
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    <a href="{{ url_for('consultation') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-stethoscope me-2"></i>Try AI Consultation
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-4">
+                        <i class="fas fa-chart-line me-2"></i>View Dashboard
+                    </a>
+                    <a href="{{ url_for('consultation') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-stethoscope me-2"></i>New Consultation
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="hero-stats">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number">AI-Powered</h3>
+                                    <p class="stat-label">Health Analysis</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number">Predictive</h3>
+                                    <p class="stat-label">Health Insights</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number">24/7</h3>
+                                    <p class="stat-label">AI Consultation</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number">Secure</h3>
+                                    <p class="stat-label">& Private</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold text-primary mb-3">Comprehensive Health Intelligence</h2>
+            <p class="lead text-muted">Advanced AI technology meets personalized healthcare</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4>AI-Powered Recommendations</h4>
+                    <p>Get personalized health recommendations powered by Gemini AI and advanced medical NLP models.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h4>Smart Health Consultation</h4>
+                    <p>Analyze symptoms with biomedical NER and get intelligent health insights instantly.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h4>Predictive Analytics</h4>
+                    <p>Advanced health analytics with predictive insights for proactive wellness management.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h4>Real-time Updates</h4>
+                    <p>Live health recommendations and insights updated in real-time through WebSocket connections.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Privacy & Security</h4>
+                    <p>Your health data is protected with enterprise-grade security and privacy measures.</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4>Mobile Responsive</h4>
+                    <p>Access your health insights anywhere with our fully responsive mobile-first design.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Personalized Recommendations Section -->
+{% if session.user_id and recommendations %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-6 fw-bold text-primary mb-3">
+                <i class="fas fa-magic me-2"></i>Your Personalized Recommendations
+            </h2>
+            <p class="lead text-muted">AI-curated content based on your health profile and interests</p>
+        </div>
+        
+        <div class="row g-4" id="recommendations-container">
+            {% for content in recommendations %}
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="recommendation-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary me-2">{{ content.category.replace('_', ' ').title() }}</span>
+                            <span class="badge bg-secondary">{{ content.content_type.title() }}</span>
+                        </div>
+                        <div class="ai-badge">
+                            <i class="fas fa-robot text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ content.title }}</h5>
+                        <p class="card-text">{{ content.description[:150] }}...</p>
+                        {% if content.duration %}
+                        <p class="text-muted small">
+                            <i class="fas fa-clock me-1"></i>{{ content.duration }} minutes
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('content_detail', content_id=content.id) }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" id="refresh-recommendations">
+                <i class="fas fa-sync-alt me-2"></i>Get Fresh Recommendations
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Content Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-6 fw-bold text-primary mb-3">Featured Health Content</h2>
+            <p class="lead text-muted">Discover trending health articles, exercises, and wellness tips</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for content in featured_content %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="content-card h-100">
+                    <div class="card-header">
+                        <span class="badge bg-info">{{ content.category.replace('_', ' ').title() }}</span>
+                        <span class="badge bg-light text-dark">{{ content.content_type.title() }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ content.title }}</h5>
+                        <p class="card-text">{{ content.description[:120] }}...</p>
+                        {% if content.difficulty_level %}
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="text-muted small me-2">Difficulty:</span>
+                            <span class="badge bg-{{ 'success' if content.difficulty_level == 'beginner' else 'warning' if content.difficulty_level == 'intermediate' else 'danger' }}">
+                                {{ content.difficulty_level.title() }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        {% if content.duration %}
+                        <p class="text-muted small">
+                            <i class="fas fa-clock me-1"></i>{{ content.duration }} minutes
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('content_detail', content_id=content.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>Read More
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('search') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-2"></i>Explore All Content
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not session.user_id %}
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center" data-aos="fade-up">
+        <h2 class="display-6 fw-bold mb-3">Ready to Transform Your Health Journey?</h2>
+        <p class="lead mb-4">Join thousands of users who are taking control of their health with AI-powered insights.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4">
+                <i class="fas fa-rocket me-2"></i>Start Free Today
+            </a>
+            <a href="{{ url_for('consultation') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="fas fa-stethoscope me-2"></i>Try AI Consultation
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Refresh recommendations button
+    const refreshBtn = document.getElementById('refresh-recommendations');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+            this.disabled = true;
+            
+            fetch('/api/recommendations/refresh')
+                .then(response => response.json())
+                .then(data => {
+                    // Update recommendations container
+                    updateRecommendations(data.content_recommendations);
+                    this.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Get Fresh Recommendations';
+                    this.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error refreshing recommendations:', error);
+                    this.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Get Fresh Recommendations';
+                    this.disabled = false;
+                });
+        });
+    }
+    
+    function updateRecommendations(recommendations) {
+        const container = document.getElementById('recommendations-container');
+        if (container && recommendations.length > 0) {
+            container.innerHTML = recommendations.map((content, index) => `
+                <div class="col-lg-6" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}">
+                    <div class="recommendation-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary me-2">${content.category.replace('_', ' ')}</span>
+                                <span class="badge bg-secondary">${content.content_type}</span>
+                            </div>
+                            <div class="ai-badge">
+                                <i class="fas fa-robot text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${content.title}</h5>
+                            <p class="card-text">${content.description.substring(0, 150)}...</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="${content.url}" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-1"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Reinitialize AOS for new elements
+            AOS.refresh();
+        }
+    }
+});
+</script>
+{% endblock %}

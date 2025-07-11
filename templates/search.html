@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}Search Health Content - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Search Header -->
+    <div class="search-header mb-4" data-aos="fade-down">
+        <h2 class="text-primary mb-3">
+            <i class="fas fa-search me-2"></i>Discover Health Content
+        </h2>
+        <p class="text-muted">Find personalized health articles, exercises, treatments, and wellness tips</p>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="card shadow-sm border-0 mb-4" data-aos="fade-up">
+        <div class="card-body">
+            <form method="GET" id="searchForm">
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <div class="search-input-group">
+                            <input type="text" class="form-control form-control-lg" id="search-query" 
+                                   name="q" value="{{ query }}" placeholder="Search health content..."
+                                   autocomplete="off">
+                            <div id="search-suggestions" class="search-suggestions"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <select class="form-control form-control-lg" name="category" id="category-filter">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {{ 'selected' if category == cat else '' }}>
+                                {{ cat.replace('_', ' ').title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <select class="form-control form-control-lg" name="type" id="type-filter">
+                            <option value="">All Types</option>
+                            {% for ctype in content_types %}
+                            <option value="{{ ctype }}" {{ 'selected' if content_type == ctype else '' }}>
+                                {{ ctype.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Quick Filters -->
+    <div class="quick-filters mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="d-flex flex-wrap gap-2">
+            <span class="text-muted me-2">Quick filters:</span>
+            <button class="btn btn-outline-primary btn-sm filter-tag" data-category="nutrition">
+                <i class="fas fa-apple-alt me-1"></i>Nutrition
+            </button>
+            <button class="btn btn-outline-success btn-sm filter-tag" data-category="fitness">
+                <i class="fas fa-dumbbell me-1"></i>Fitness
+            </button>
+            <button class="btn btn-outline-info btn-sm filter-tag" data-category="mental_health">
+                <i class="fas fa-brain me-1"></i>Mental Health
+            </button>
+            <button class="btn btn-outline-warning btn-sm filter-tag" data-category="cardiology">
+                <i class="fas fa-heartbeat me-1"></i>Heart Health
+            </button>
+            <button class="btn btn-outline-secondary btn-sm filter-tag" data-type="exercise">
+                <i class="fas fa-running me-1"></i>Exercises
+            </button>
+        </div>
+    </div>
+    
+    <!-- Search Results -->
+    <div class="search-results">
+        {% if query or category or content_type %}
+        <div class="results-header mb-4" data-aos="fade-up" data-aos-delay="200">
+            <h5 class="text-primary">
+                Search Results 
+                <span class="text-muted">({{ results|length }} found)</span>
+            </h5>
+            {% if query %}
+            <p class="text-muted">Results for "<strong>{{ query }}</strong>"</p>
+            {% endif %}
+            {% if category or content_type %}
+            <div class="active-filters">
+                {% if category %}
+                <span class="badge bg-primary me-2">
+                    Category: {{ category.replace('_', ' ').title() }}
+                    <a href="?q={{ query }}&type={{ content_type }}" class="text-white ms-1">×</a>
+                </span>
+                {% endif %}
+                {% if content_type %}
+                <span class="badge bg-secondary me-2">
+                    Type: {{ content_type.title() }}
+                    <a href="?q={{ query }}&category={{ category }}" class="text-white ms-1">×</a>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if results %}
+        <div class="row g-4">
+            {% for content in results %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 50 }}">
+                <div class="content-search-card h-100">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="content-badges">
+                                <span class="badge bg-primary">{{ content.category.replace('_', ' ').title() }}</span>
+                                <span class="badge bg-secondary">{{ content.content_type.title() }}</span>
+                            </div>
+                            {% if content.difficulty_level %}
+                            <span class="badge bg-{{ 'success' if content.difficulty_level == 'beginner' else 'warning' if content.difficulty_level == 'intermediate' else 'danger' }}">
+                                {{ content.difficulty_level.title() }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">{{ content.title }}</h5>
+                        <p class="card-text text-muted">{{ content.description[:150] }}...</p>
+                        
+                        <div class="content-meta">
+                            {% if content.duration %}
+                            <div class="meta-item">
+                                <i class="fas fa-clock text-muted me-1"></i>
+                                <small class="text-muted">{{ content.duration }} minutes</small>
+                            </div>
+                            {% endif %}
+                            <div class="meta-item">
+                                <i class="fas fa-star text-warning me-1"></i>
+                                <small class="text-muted">4.2/5</small>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-eye text-muted me-1"></i>
+                                <small class="text-muted">{{ content.popularity_score|round|int }} views</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('content_detail', content_id=content.id) }}" class="btn btn-primary">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            {% if session.user_id %}
+                            <div class="content-actions">
+                                <button class="btn btn-outline-secondary btn-sm bookmark-btn" data-content-id="{{ content.id }}">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm share-btn" data-content-id="{{ content.id }}">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Load More Button -->
+        {% if results|length >= 12 %}
+        <div class="text-center mt-5" data-aos="fade-up">
+            <button class="btn btn-outline-primary btn-lg" id="load-more-btn">
+                <i class="fas fa-plus me-2"></i>Load More Results
+            </button>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-search-state text-center py-5" data-aos="fade-up">
+            {% if query or category or content_type %}
+            <div class="empty-icon mb-4">
+                <i class="fas fa-search text-muted"></i>
+            </div>
+            <h4 class="text-muted mb-3">No Results Found</h4>
+            <p class="text-muted mb-4">Try adjusting your search terms or filters</p>
+            <button class="btn btn-primary" onclick="clearFilters()">
+                <i class="fas fa-times me-2"></i>Clear Filters
+            </button>
+            {% else %}
+            <div class="empty-icon mb-4">
+                <i class="fas fa-compass text-muted"></i>
+            </div>
+            <h4 class="text-muted mb-3">Discover Health Content</h4>
+            <p class="text-muted mb-4">Use the search bar above to find articles, exercises, and health tips</p>
+            
+            <!-- Popular Categories -->
+            <div class="popular-categories">
+                <h6 class="text-muted mb-3">Popular Categories:</h6>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    {% for cat in categories[:6] %}
+                    <a href="?category={{ cat }}" class="btn btn-outline-primary">
+                        {{ cat.replace('_', ' ').title() }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search Suggestions Template -->
+<template id="suggestion-template">
+    <div class="suggestion-item">
+        <div class="suggestion-text"></div>
+        <div class="suggestion-category"></div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearch();
+    initializeFilters();
+    initializeBookmarkButtons();
+    
+    {% if session.user_id %}
+    trackSearchActivity();
+    {% endif %}
+});
+
+function initializeSearch() {
+    const searchInput = document.getElementById('search-query');
+    const suggestionsContainer = document.getElementById('search-suggestions');
+    let searchTimeout;
+    
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length >= 2) {
+            searchTimeout = setTimeout(() => {
+                fetchSearchSuggestions(query);
+            }, 300);
+        } else {
+            hideSuggestions();
+        }
+    });
+    
+    searchInput.addEventListener('blur', function() {
+        setTimeout(hideSuggestions, 200);
+    });
+    
+    function fetchSearchSuggestions(query) {
+        {% if session.user_id %}
+        if (window.socket) {
+            window.socket.emit('search_suggestions', { query: query });
+        }
+        {% endif %}
+    }
+    
+    function hideSuggestions() {
+        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.style.display = 'none';
+    }
+    
+    {% if session.user_id %}
+    // Listen for search suggestions from WebSocket
+    if (window.socket) {
+        window.socket.on('search_suggestions', function(data) {
+            displaySuggestions(data.suggestions);
+        });
+    }
+    {% endif %}
+    
+    function displaySuggestions(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            hideSuggestions();
+            return;
+        }
+        
+        const html = suggestions.map(suggestion => `
+            <div class="suggestion-item" onclick="selectSuggestion('${suggestion.text}')">
+                <div class="suggestion-text">${suggestion.text}</div>
+                <div class="suggestion-category">${suggestion.category || suggestion.type}</div>
+            </div>
+        `).join('');
+        
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+    }
+    
+    window.selectSuggestion = function(text) {
+        searchInput.value = text;
+        hideSuggestions();
+        document.getElementById('searchForm').submit();
+    };
+}
+
+function initializeFilters() {
+    const filterTags = document.querySelectorAll('.filter-tag');
+    
+    filterTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            const category = this.dataset.category;
+            const type = this.dataset.type;
+            
+            const form = document.getElementById('searchForm');
+            if (category) {
+                form.querySelector('[name="category"]').value = category;
+            }
+            if (type) {
+                form.querySelector('[name="type"]').value = type;
+            }
+            
+            form.submit();
+        });
+    });
+    
+    // Auto-submit on filter change
+    document.getElementById('category-filter').addEventListener('change', function() {
+        document.getElementById('searchForm').submit();
+    });
+    
+    document.getElementById('type-filter').addEventListener('change', function() {
+        document.getElementById('searchForm').submit();
+    });
+}
+
+function initializeBookmarkButtons() {
+    const bookmarkBtns = document.querySelectorAll('.bookmark-btn');
+    
+    bookmarkBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const contentId = this.dataset.contentId;
+            toggleBookmark(contentId, this);
+        });
+    });
+}
+
+function toggleBookmark(contentId, button) {
+    const formData = new FormData();
+    formData.append('content_id', contentId);
+    
+    fetch('/api/bookmark_content', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const icon = button.querySelector('i');
+            if (data.action === 'added') {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                button.classList.add('text-primary');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                button.classList.remove('text-primary');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function trackSearchActivity() {
+    {% if query %}
+    if (window.socket) {
+        window.socket.emit('track_activity', {
+            type: 'search',
+            search_query: '{{ query }}',
+            timestamp: new Date().toISOString()
+        });
+    }
+    {% endif %}
+}
+
+function clearFilters() {
+    window.location.href = '{{ url_for("search") }}';
+}
+
+// Share functionality
+document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const contentId = this.dataset.contentId;
+        shareContent(contentId);
+    });
+});
+
+function shareContent(contentId) {
+    const url = `${window.location.origin}/content/${contentId}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Health Content from HealthAI',
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link copied to clipboard!');
+        });
+    }
+}
+</script>
+{% endblock %}

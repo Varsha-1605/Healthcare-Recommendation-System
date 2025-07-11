@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health Consultation - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if not consultation %}
+    <!-- New Consultation Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0" data-aos="fade-up">
+                <div class="card-header bg-gradient-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>AI Health Consultation
+                    </h2>
+                    <p class="mb-0 mt-2">Describe your symptoms and get AI-powered health insights</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <form method="POST" id="consultationForm">
+                        <div class="mb-4">
+                            <label for="symptoms" class="form-label">
+                                <i class="fas fa-notes-medical me-2 text-primary"></i>
+                                Describe Your Symptoms
+                            </label>
+                            <textarea class="form-control" id="symptoms" name="symptoms" rows="6" required
+                                      placeholder="Please describe your symptoms in detail. Include when they started, how severe they are, and any factors that make them better or worse..."></textarea>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Be as detailed as possible to get the most accurate AI analysis
+                            </div>
+                        </div>
+                        
+                        <!-- Medical Disclaimer -->
+                        <div class="alert alert-warning mb-4">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Important Medical Disclaimer
+                            </h6>
+                            <p class="mb-0">This AI consultation is for informational purposes only and should not replace professional medical advice. Always consult with qualified healthcare professionals for proper diagnosis and treatment.</p>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-brain me-2"></i>Analyze Symptoms with AI
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- AI Features Info -->
+            <div class="row mt-4 g-3">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-highlight-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h6>Medical Entity Recognition</h6>
+                        <p class="small">Advanced NLP extracts medical entities from your symptoms</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-highlight-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h6>Gemini AI Analysis</h6>
+                        <p class="small">Powered by Google's advanced AI for symptom analysis</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-highlight-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6>Personalized Insights</h6>
+                        <p class="small">Analysis considers your health profile and history</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Consultation Results -->
+    <div class="row">
+        <div class="col-12">
+            <div class="consultation-results" data-aos="fade-up">
+                <!-- Header -->
+                <div class="results-header">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="text-primary">
+                            <i class="fas fa-clipboard-check me-2"></i>Consultation Results
+                        </h2>
+                        <div class="consultation-meta">
+                            <span class="badge bg-info me-2">{{ consultation.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                            {% if consultation.confidence_score %}
+                            <span class="badge bg-secondary">Confidence: {{ (consultation.confidence_score * 100)|round }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Your Symptoms -->
+                <div class="card mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-notes-medical me-2"></i>Your Symptoms
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ consultation.symptoms|nl2br|safe }}</p>
+                    </div>
+                </div>
+                
+                <!-- AI Analysis Results -->
+                {% if analysis %}
+                <div class="row mb-4">
+                    <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-robot me-2"></i>AI Analysis
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if analysis.condition %}
+                                <div class="mb-3">
+                                    <h6 class="text-primary">Potential Condition:</h6>
+                                    <p class="mb-0">{{ analysis.condition }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if analysis.recommendations %}
+                                <div class="mb-3">
+                                    <h6 class="text-primary">Recommendations:</h6>
+                                    {% if analysis.recommendations is string %}
+                                    <p class="mb-0">{{ analysis.recommendations }}</p>
+                                    {% else %}
+                                    <ul class="mb-0">
+                                        {% for rec in analysis.recommendations %}
+                                        <li>{{ rec }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-pie me-2"></i>Assessment
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if consultation.severity_level %}
+                                <div class="mb-3">
+                                    <h6>Severity Level:</h6>
+                                    <span class="badge bg-{{ 'danger' if consultation.severity_level == 'high' else 'warning' if consultation.severity_level == 'moderate' else 'success' }} fs-6">
+                                        {{ consultation.severity_level.title() }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if consultation.confidence_score %}
+                                <div class="mb-3">
+                                    <h6>AI Confidence:</h6>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar" style="width: {{ (consultation.confidence_score * 100)|round }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ (consultation.confidence_score * 100)|round }}% confidence</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Medical Entities -->
+                {% if entities and entities|length > 0 %}
+                <div class="card mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tags me-2"></i>Extracted Medical Entities
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for entity in entities %}
+                            {% if entity.text and entity.label %}
+                            <div class="col-md-4 mb-2">
+                                <div class="entity-tag">
+                                    <span class="entity-text">{{ entity.text }}</span>
+                                    <span class="entity-label">{{ entity.label }}</span>
+                                    {% if entity.confidence %}
+                                    <span class="entity-confidence">{{ (entity.confidence * 100)|round }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Important Disclaimer -->
+                <div class="alert alert-danger mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Medical Disclaimer
+                    </h6>
+                    <p class="mb-0">This AI analysis is for informational purposes only and should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of qualified healthcare providers with any questions you may have regarding your health condition.</p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center" data-aos="fade-up" data-aos-delay="600">
+                    <a href="{{ url_for('consultation') }}" class="btn btn-primary me-3">
+                        <i class="fas fa-plus me-2"></i>New Consultation
+                    </a>
+                    <a href="{{ url_for('consultation_history') }}" class="btn btn-outline-secondary me-3">
+                        <i class="fas fa-history me-2"></i>View History
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('consultationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const symptoms = document.getElementById('symptoms').value.trim();
+            
+            if (symptoms.length < 10) {
+                e.preventDefault();
+                alert('Please provide more detailed symptoms for better analysis.');
+                return false;
+            }
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing with AI...';
+            submitBtn.disabled = true;
+            
+            // Show progress indicator
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'mt-3 text-center';
+            progressDiv.innerHTML = `
+                <div class="spinner-border text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="text-muted">AI is analyzing your symptoms...</span>
+            `;
+            form.appendChild(progressDiv);
+        });
+    }
+    
+    // Character counter for symptoms textarea
+    const symptomsTextarea = document.getElementById('symptoms');
+    if (symptomsTextarea) {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end';
+        counter.innerHTML = '<span id="char-count">0</span> characters';
+        symptomsTextarea.parentNode.appendChild(counter);
+        
+        symptomsTextarea.addEventListener('input', function() {
+            document.getElementById('char-count').textContent = this.value.length;
+        });
+    }
+});
+</script>
+{% endblock %}

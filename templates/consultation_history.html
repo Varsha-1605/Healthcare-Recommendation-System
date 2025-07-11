@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation History - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down">
+                <div>
+                    <h2 class="text-primary mb-0">
+                        <i class="fas fa-history me-2"></i>Consultation History
+                    </h2>
+                    <p class="text-muted mt-2">Review your AI health consultations and track your health journey</p>
+                </div>
+                <a href="{{ url_for('consultation') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Consultation
+                </a>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4 g-3">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-primary">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">{{ consultations|length }}</h3>
+                            <p class="stat-label">Total Consultations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">
+                                {{ consultations|selectattr('severity_level', 'equalto', 'low')|list|length }}
+                            </h3>
+                            <p class="stat-label">Low Severity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">
+                                {{ consultations|selectattr('severity_level', 'equalto', 'moderate')|list|length }}
+                            </h3>
+                            <p class="stat-label">Moderate Severity</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number">
+                                {{ consultations|selectattr('severity_level', 'equalto', 'high')|list|length }}
+                            </h3>
+                            <p class="stat-label">High Severity</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consultations List -->
+            {% if consultations %}
+            <div class="row">
+                {% for consultation in consultations %}
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="consultation-history-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="consultation-date">
+                                <i class="fas fa-calendar me-2"></i>
+                                {{ consultation.created_at.strftime('%B %d, %Y') }}
+                                <small class="text-muted ms-2">{{ consultation.created_at.strftime('%I:%M %p') }}</small>
+                            </div>
+                            {% if consultation.severity_level %}
+                            <span class="badge bg-{{ 'danger' if consultation.severity_level == 'high' else 'warning' if consultation.severity_level == 'moderate' else 'success' }}">
+                                {{ consultation.severity_level.title() }} Severity
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="symptoms-preview mb-3">
+                                <h6 class="text-primary mb-2">
+                                    <i class="fas fa-notes-medical me-2"></i>Symptoms:
+                                </h6>
+                                <p class="text-muted">{{ consultation.symptoms[:200] }}{% if consultation.symptoms|length > 200 %}...{% endif %}</p>
+                            </div>
+                            
+                            {% if consultation.analysis_result %}
+                            {% set analysis = consultation.analysis_result|from_json %}
+                            {% if analysis and analysis.condition %}
+                            <div class="analysis-preview mb-3">
+                                <h6 class="text-success mb-2">
+                                    <i class="fas fa-brain me-2"></i>AI Analysis:
+                                </h6>
+                                <p class="small text-muted">{{ analysis.condition }}</p>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            
+                            <div class="consultation-meta">
+                                {% if consultation.confidence_score %}
+                                <div class="confidence-indicator mb-2">
+                                    <small class="text-muted">AI Confidence: </small>
+                                    <div class="progress progress-sm d-inline-block" style="width: 100px;">
+                                        <div class="progress-bar" style="width: {{ (consultation.confidence_score * 100)|round }}%"></div>
+                                    </div>
+                                    <small class="text-muted ms-2">{{ (consultation.confidence_score * 100)|round }}%</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer">
+                            <a href="{{ url_for('view_consultation', consultation_id=consultation.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>View Full Analysis
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="shareConsultation({{ consultation.id }})">
+                                <i class="fas fa-share me-2"></i>Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination would go here if needed -->
+            
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state text-center py-5" data-aos="fade-up">
+                <div class="empty-icon mb-4">
+                    <i class="fas fa-clipboard-list text-muted"></i>
+                </div>
+                <h4 class="text-muted mb-3">No Consultations Yet</h4>
+                <p class="text-muted mb-4">Start your health journey with an AI-powered consultation</p>
+                <a href="{{ url_for('consultation') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-stethoscope me-2"></i>Start Your First Consultation
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Health Trends Section -->
+            {% if consultations|length > 1 %}
+            <div class="mt-5">
+                <div class="card border-0 shadow-sm" data-aos="fade-up">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Health Trends
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="severityTrendChart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="consultationFrequencyChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts if we have consultation data
+    {% if consultations|length > 1 %}
+    initializeCharts();
+    {% endif %}
+});
+
+function shareConsultation(consultationId) {
+    // Simple share functionality
+    if (navigator.share) {
+        navigator.share({
+            title: 'HealthAI Consultation',
+            text: 'Check out my health consultation results from HealthAI',
+            url: window.location.origin + '/consultation/' + consultationId
+        });
+    } else {
+        // Fallback - copy link to clipboard
+        const url = window.location.origin + '/consultation/' + consultationId;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Consultation link copied to clipboard!');
+        });
+    }
+}
+
+{% if consultations|length > 1 %}
+function initializeCharts() {
+    // Severity Trend Chart
+    const severityCtx = document.getElementById('severityTrendChart').getContext('2d');
+    const severityData = {
+        labels: [{% for consultation in consultations[-10:] %}'{{ consultation.created_at.strftime("%m/%d") }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Severity Level',
+            data: [{% for consultation in consultations[-10:] %}{{ 1 if consultation.severity_level == 'low' else 2 if consultation.severity_level == 'moderate' else 3 if consultation.severity_level == 'high' else 0 }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }]
+    };
+    
+    new Chart(severityCtx, {
+        type: 'line',
+        data: severityData,
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Symptom Severity Trend'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 3,
+                    ticks: {
+                        callback: function(value) {
+                            const labels = ['None', 'Low', 'Moderate', 'High'];
+                            return labels[value];
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Consultation Frequency Chart
+    const frequencyCtx = document.getElementById('consultationFrequencyChart').getContext('2d');
+    
+    // Group consultations by month
+    const monthlyData = {};
+    {% for consultation in consultations %}
+    const month{{ loop.index }} = '{{ consultation.created_at.strftime("%Y-%m") }}';
+    monthlyData[month{{ loop.index }}] = (monthlyData[month{{ loop.index }}] || 0) + 1;
+    {% endfor %}
+    
+    const frequencyData = {
+        labels: Object.keys(monthlyData),
+        datasets: [{
+            label: 'Consultations',
+            data: Object.values(monthlyData),
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    
+    new Chart(frequencyCtx, {
+        type: 'bar',
+        data: frequencyData,
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Consultation Frequency'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

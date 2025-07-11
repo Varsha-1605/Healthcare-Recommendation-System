@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}{{ content.title }} - HealthAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <article class="content-detail" data-aos="fade-up">
+                <!-- Content Header -->
+                <div class="content-header mb-4">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <span class="badge bg-primary fs-6">{{ content.category.replace('_', ' ').title() }}</span>
+                        <span class="badge bg-secondary">{{ content.content_type.title() }}</span>
+                        {% if content.difficulty_level %}
+                        <span class="badge bg-{{ 'success' if content.difficulty_level == 'beginner' else 'warning' if content.difficulty_level == 'intermediate' else 'danger' }}">
+                            {{ content.difficulty_level.title() }}
+                        </span>
+                        {% endif %}
+                        {% if content.duration %}
+                        <span class="badge bg-info">
+                            <i class="fas fa-clock me-1"></i>{{ content.duration }} min
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold text-primary mb-3">{{ content.title }}</h1>
+                    
+                    <div class="content-meta d-flex flex-wrap align-items-center gap-3 text-muted">
+                        <div>
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ content.created_at.strftime('%B %d, %Y') }}
+                        </div>
+                        <div>
+                            <i class="fas fa-star me-1"></i>
+                            <span id="average-rating">Loading...</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-eye me-1"></i>
+                            <span id="view-count">{{ content.popularity_score|round|int }} views</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content Body -->
+                <div class="content-body mb-4">
+                    {% if content.image_url %}
+                    <div class="content-image mb-4">
+                        <img src="{{ content.image_url }}" alt="{{ content.title }}" class="img-fluid rounded shadow">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="content-description">
+                        <p class="lead">{{ content.description|nl2br|safe }}</p>
+                    </div>
+                    
+                    {% if content.content_url %}
+                    <div class="external-content mt-4">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-external-link-alt me-2"></i>External Resource
+                            </h6>
+                            <p class="mb-3">This content is available at an external source.</p>
+                            <a href="{{ content.content_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>View Full Content
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Action Buttons -->
+                {% if session.user_id %}
+                <div class="content-actions mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary" id="bookmark-btn" data-content-id="{{ content.id }}">
+                            <i class="fas fa-bookmark me-2"></i>
+                            <span id="bookmark-text">{{ 'Bookmarked' if is_bookmarked else 'Bookmark' }}</span>
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="shareContent()">
+                            <i class="fas fa-share me-2"></i>Share
+                        </button>
+                        <button class="btn btn-outline-info" onclick="reportContent()">
+                            <i class="fas fa-flag me-2"></i>Report
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Rating Section -->
+                {% if session.user_id %}
+                <div class="rating-section mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-star me-2"></i>Rate This Content
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="rating-form" data-content-id="{{ content.id }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Your Rating:</label>
+                                    <div class="rating-stars">
+                                        {% for i in range(1, 6) %}
+                                        <i class="fas fa-star rating-star" data-rating="{{ i }}" 
+                                           {% if user_rating and user_rating.rating >= i %}style="color: #ffc107;"{% endif %}></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="review" class="form-label">Review (Optional):</label>
+                                    <textarea class="form-control" id="review" name="review" rows="3" 
+                                              placeholder="Share your thoughts about this content...">{% if user_rating %}{{ user_rating.review }}{% endif %}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Rating
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Tags -->
+                {% if content.tags %}
+                <div class="content-tags mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <h6 class="text-muted mb-2">Tags:</h6>
+                    <div class="tag-cloud">
+                        {% set tags = content.tags|from_json if content.tags else [] %}
+                        {% for tag in tags %}
+                        <span class="badge bg-light text-dark me-1 mb-1">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </article>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Related Content -->
+            {% if related_content %}
+            <div class="card mb-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Related Content
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_content %}
+                    <div class="related-item mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="related-icon me-3">
+                                <i class="fas fa-{{ 'play' if related.content_type == 'video' else 'dumbbell' if related.content_type == 'exercise' else 'file-alt' }}"></i>
+                            </div>
+                            <div class="related-content">
+                                <h6 class="mb-1">
+                                    <a href="{{ url_for('content_detail', content_id=related.id) }}" class="text-decoration-none">
+                                        {{ related.title }}
+                                    </a>
+                                </h6>
+                                <p class="small text-muted mb-1">{{ related.description[:80] }}...</p>
+                                <div class="small text-muted">
+                                    <span class="badge bg-light text-dark">{{ related.content_type.title() }}</span>
+                                    {% if related.duration %}
+                                    <span class="ms-2">
+                                        <i class="fas fa-clock me-1"></i>{{ related.duration }} min
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if not loop.last %}<hr class="my-3">{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Quick Actions -->
+            {% if session.user_id %}
+            <div class="card mb-4" data-aos="fade-up" data-aos-delay="600">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('consultation') }}" class="btn btn-primary">
+                            <i class="fas fa-stethoscope me-2"></i>AI Consultation
+                        </a>
+                        <a href="{{ url_for('search') }}?category={{ content.category }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>More in {{ content.category.replace('_', ' ').title() }}
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-chart-line me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Content Statistics -->
+            <div class="card" data-aos="fade-up" data-aos-delay="700">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Content Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="content-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Category:</span>
+                            <span class="stat-value">{{ content.category.replace('_', ' ').title() }}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Type:</span>
+                            <span class="stat-value">{{ content.content_type.title() }}</span>
+                        </div>
+                        {% if content.difficulty_level %}
+                        <div class="stat-row">
+                            <span class="stat-label">Difficulty:</span>
+                            <span class="stat-value">{{ content.difficulty_level.title() }}</span>
+                        </div>
+                        {% endif %}
+                        {% if content.duration %}
+                        <div class="stat-row">
+                            <span class="stat-label">Duration:</span>
+                            <span class="stat-value">{{ content.duration }} minutes</span>
+                        </div>
+                        {% endif %}
+                        {% if content.target_age_min and content.target_age_max %}
+                        <div class="stat-row">
+                            <span class="stat-label">Age Range:</span>
+                            <span class="stat-value">{{ content.target_age_min }}-{{ content.target_age_max }} years</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentId = {{ content.id }};
+    
+    // Track content view
+    {% if session.user_id %}
+    trackActivity('view', contentId);
+    {% endif %}
+    
+    // Initialize rating stars
+    initializeRatingStars();
+    
+    // Initialize bookmark functionality
+    initializeBookmarkButton();
+    
+    // Load average rating
+    loadAverageRating();
+});
+
+function initializeRatingStars() {
+    const stars = document.querySelectorAll('.rating-star');
+    const form = document.getElementById('rating-form');
+    
+    if (!stars.length || !form) return;
+    
+    let selectedRating = {{ user_rating.rating if user_rating else 0 }};
+    
+    stars.forEach(star => {
+        star.addEventListener('mouseover', function() {
+            const rating = parseInt(this.dataset.rating);
+            updateStarDisplay(rating);
+        });
+        
+        star.addEventListener('mouseout', function() {
+            updateStarDisplay(selectedRating);
+        });
+        
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            updateStarDisplay(selectedRating);
+        });
+    });
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitRating(selectedRating);
+    });
+    
+    function updateStarDisplay(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#dee2e6';
+            }
+        });
+    }
+}
+
+function submitRating(rating) {
+    if (rating === 0) {
+        alert('Please select a rating');
+        return;
+    }
+    
+    const form = document.getElementById('rating-form');
+    const formData = new FormData(form);
+    formData.append('rating', rating);
+    formData.append('content_id', form.dataset.contentId);
+    
+    fetch('/api/rate_content', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Rating saved successfully!');
+            loadAverageRating();
+        } else {
+            alert('Error saving rating: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving rating');
+    });
+}
+
+function initializeBookmarkButton() {
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    if (!bookmarkBtn) return;
+    
+    bookmarkBtn.addEventListener('click', function() {
+        const contentId = this.dataset.contentId;
+        const formData = new FormData();
+        formData.append('content_id', contentId);
+        
+        fetch('/api/bookmark_content', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const text = document.getElementById('bookmark-text');
+                const icon = this.querySelector('i');
+                
+                if (data.action === 'added') {
+                    text.textContent = 'Bookmarked';
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                } else {
+                    text.textContent = 'Bookmark';
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-outline-primary');
+                }
+                
+                trackActivity('bookmark', contentId);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+}
+
+function loadAverageRating() {
+    // This would typically fetch from an API
+    // For now, we'll show a placeholder
+    document.getElementById('average-rating').textContent = '4.2/5 (Based on user ratings)';
+}
+
+function shareContent() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ content.title }}',
+            text: '{{ content.description[:100] }}...',
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link copied to clipboard!');
+        });
+    }
+}
+
+function reportContent() {
+    const reason = prompt('Please briefly describe the issue with this content:');
+    if (reason) {
+        alert('Thank you for your report. We will review this content.');
+        // In a real app, this would send the report to the server
+    }
+}
+
+function trackActivity(type, contentId) {
+    {% if session.user_id %}
+    if (window.socket) {
+        window.socket.emit('track_activity', {
+            type: type,
+            content_id: contentId,
+            timestamp: new Date().toISOString()
+        });
+    }
+    {% endif %}
+}
+</script>
+{% endblock %}

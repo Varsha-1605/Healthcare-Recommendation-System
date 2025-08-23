@@ -109,9 +109,11 @@ HealthAI/
 │   └── search.html
 ├── ai_services.py          # AI/ML integration services
 ├── app.py                  # Flask application setup
+|__ gunicorn_config.py
 ├── main.py                 # Application entry point
 ├── models.py               # Database models
 ├── routes.py               # URL routes and handlers
+|__ run.py
 ├── websocket_handlers.py   # Real-time WebSocket handlers
 ├── requirements.txt        # Python dependencies
 └── README.md              # This file

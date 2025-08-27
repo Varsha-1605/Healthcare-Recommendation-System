@@ -28,6 +28,10 @@ gunicorn==21.2.0
 eventlet==0.33.3
 python-socketio==5.10.0
 ```
+## 🎥 Project Demo
+
+▶️ [Watch the demo video here](https://drive.google.com/file/d/11Xo26uHHepyUvrRQNZuaaYfJOErOLuDN/view?usp=sharing)
+
 
 ## 🛠️ Local Setup Instructions
 

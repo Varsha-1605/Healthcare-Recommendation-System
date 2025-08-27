@@ -28,6 +28,14 @@ gunicorn==21.2.0
 eventlet==0.33.3
 python-socketio==5.10.0
 ```
+## 🎥 Project Demo
+
+<iframe src="https://drive.google.com/file/d/11Xo26uHHepyUvrRQNZuaaYfJOErOLuDN/preview" 
+        width="640" 
+        height="480" 
+        allow="autoplay">
+</iframe>
+
 
 ## 🛠️ Local Setup Instructions
 

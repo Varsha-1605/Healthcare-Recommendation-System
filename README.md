@@ -11,6 +11,11 @@ A comprehensive healthcare recommendation platform that combines Flask backend w
 - **User Management**: Secure authentication and comprehensive health profiles
 - **Content Management**: Categorized health articles, videos, exercises, and treatments
 
+## 🎥 Project Demo
+
+https://github.com/user-attachments/assets/14ccd9b7-244b-4865-be0a-490eb9f394d0
+
+
 ## 📋 Requirements
 
 Create a `requirements.txt` file with the following dependencies:
@@ -28,11 +33,6 @@ gunicorn==21.2.0
 eventlet==0.33.3
 python-socketio==5.10.0
 ```
-## 🎥 Project Demo
-
-▶️ [Watch the demo video here](https://drive.google.com/file/d/11Xo26uHHepyUvrRQNZuaaYfJOErOLuDN/view?usp=sharing)
-
-
 ## 🛠️ Local Setup Instructions
 
 ### 1. Clone or Create Project Directory
